@@ -1,0 +1,1 @@
+JARVIS 2.0: interfaz web y función segura Netlify Functions para OpenAI. Requiere OPENAI_API_KEY configurada en Netlify y Functions habilitadas. Modelo predeterminado gpt-4.1-mini; la API puede generar cargos. Netlify Drop no despliega funciones: conectar el repositorio Git a Netlify o usar Netlify CLI. El historial es local en el navegador. Nunca publiques la clave API.
