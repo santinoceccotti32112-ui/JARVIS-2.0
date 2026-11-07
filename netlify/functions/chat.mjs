@@ -1,4 +1,3 @@
-
 export default async (request) => {
   if (request.method !== "POST") {
     return Response.json(
@@ -7,11 +6,11 @@ export default async (request) => {
     );
   }
 
-  const key = process.env.OPENAI_API_KEY;
+  const key = process.env.GEMINI_API_KEY;
 
   if (!key) {
     return Response.json(
-      { error: "No se encontró OPENAI_API_KEY en Netlify." },
+      { error: "No se encontró GEMINI_API_KEY en Netlify." },
       { status: 500 }
     );
   }
@@ -38,8 +37,8 @@ export default async (request) => {
     )
     .slice(-12)
     .map(m => ({
-      role: m.role,
-      content: m.content.slice(0, 4000)
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content.slice(0, 4000) }]
     }));
 
   if (!messages.some(m => m.role === "user")) {
@@ -51,19 +50,23 @@ export default async (request) => {
 
   try {
     const r = await fetch(
-      "https://api.openai.com/v1/responses",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${key}`,
+          "x-goog-api-key": key,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-          instructions:
-            "Eres JARVIS, asistente personal en español. Sé formal, preciso y educado. Dirígete al usuario como Señor. No afirmes controlar el teléfono ni otras aplicaciones si no tienes herramientas para hacerlo.",
-          input: messages,
-          max_output_tokens: 700
+          systemInstruction: {
+            parts: [{
+              text: "Eres JARVIS, asistente personal en español. Sé formal, preciso y educado. Dirígete al usuario como Señor. No afirmes controlar el teléfono ni otras aplicaciones si no tienes herramientas para hacerlo."
+            }]
+          },
+          contents: messages,
+          generationConfig: {
+            maxOutputTokens: 700
+          }
         })
       }
     );
@@ -75,19 +78,16 @@ export default async (request) => {
         {
           error:
             data?.error?.message ||
-            "OpenAI rechazó la solicitud."
+            "Google Gemini rechazó la solicitud."
         },
         { status: r.status }
       );
     }
 
-    const reply =
-      data.output_text ||
-      (data.output || [])
-        .flatMap(x => x.content || [])
-        .filter(x => x.type === "output_text")
-        .map(x => x.text)
-        .join("\n");
+    const reply = (data.candidates?.[0]?.content?.parts || [])
+      .map(part => part.text || "")
+      .join("\n")
+      .trim();
 
     return Response.json({
       reply: reply || "No recibí respuesta de texto."
@@ -95,7 +95,7 @@ export default async (request) => {
 
   } catch {
     return Response.json(
-      { error: "No se pudo contactar con OpenAI." },
+      { error: "No se pudo contactar con Google Gemini." },
       { status: 502 }
     );
   }
