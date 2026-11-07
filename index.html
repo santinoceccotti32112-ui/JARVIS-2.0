@@ -107,13 +107,13 @@ A sus órdenes, Señor. ¿En qué puedo ayudarle?
 </form>
 
 <div class="actions">
-<button type="button" id="mic">🎙 Hablar</button>
+<button type="button" id="mic">🎙 HABLAR</button>
 <button type="button" id="voice">🔊 ACTIVAR VOZ</button>
-<button type="button" id="clear">Limpiar</button>
+<button type="button" id="clear">LIMPIAR</button>
 </div>
 
 <div class="note">
-La voz utiliza el sistema de audio de su navegador.
+Sistema de voz compatible con el motor de síntesis de Android.
 La clave API permanece protegida en el servidor.
 </div>
 </section>
@@ -125,11 +125,8 @@ const $ = id => document.getElementById(id);
 // RELOJ Y FECHA
 function clock(){
  const d = new Date();
- $('clock').textContent =
- d.toLocaleTimeString('es-AR');
-
- $('date').textContent =
- d.toLocaleDateString('es-AR',{
+ $('clock').textContent = d.toLocaleTimeString('es-AR');
+ $('date').textContent = d.toLocaleDateString('es-AR',{
   weekday:'long',
   year:'numeric',
   month:'long',
@@ -143,16 +140,12 @@ setInterval(clock,1000);
 let history = [];
 
 try{
- history = JSON.parse(
-  localStorage.getItem('jarvis_history') || '[]'
- );
+ history = JSON.parse(localStorage.getItem('jarvis_history') || '[]');
 }catch(e){}
 
 function add(role,content,save=true){
  const el = document.createElement('div');
- el.className = 'msg ' +
-  (role === 'user' ? 'user' : 'jarvis');
-
+ el.className = 'msg ' + (role === 'user' ? 'user' : 'jarvis');
  el.textContent = content;
  $('chat').appendChild(el);
  $('chat').scrollTop = $('chat').scrollHeight;
@@ -160,10 +153,7 @@ function add(role,content,save=true){
  if(save){
   history.push({role,content});
   history = history.slice(-20);
-  localStorage.setItem(
-   'jarvis_history',
-   JSON.stringify(history)
-  );
+  localStorage.setItem('jarvis_history',JSON.stringify(history));
  }
 }
 
@@ -172,43 +162,112 @@ if(history.length){
  history.forEach(m => add(m.role,m.content,false));
 }
 
-// SISTEMA DE VOZ
-let voice = false;
+// SISTEMA DE VOZ MEJORADO
+let voiceEnabled = false;
+let availableVoices = [];
 
-function speak(text){
- if(!voice || !('speechSynthesis' in window)) return;
-
- window.speechSynthesis.cancel();
-
- const utterance = new SpeechSynthesisUtterance(text);
- utterance.lang = 'es-AR';
- utterance.rate = 0.95;
- utterance.pitch = 1;
- utterance.volume = 1;
-
- window.speechSynthesis.speak(utterance);
+function loadVoices(){
+ availableVoices = window.speechSynthesis.getVoices();
 }
 
-// BOTÓN DE ACTIVACIÓN DE VOZ
-$('voice').onclick = () => {
+if('speechSynthesis' in window){
+ loadVoices();
+ window.speechSynthesis.addEventListener('voiceschanged',loadVoices);
+}
+
+function waitForVoices(){
+ return new Promise(resolve => {
+  loadVoices();
+
+  if(availableVoices.length){
+   resolve();
+   return;
+  }
+
+  let finished = false;
+
+  const done = () => {
+   if(finished) return;
+   finished = true;
+   clearTimeout(timer);
+   resolve();
+  };
+
+  window.speechSynthesis.addEventListener('voiceschanged',done,{once:true});
+
+  const timer = setTimeout(done,1800);
+ });
+}
+
+async function speak(text){
+ if(!voiceEnabled || !('speechSynthesis' in window)) return;
+
+ const cleanText = String(text || '').trim();
+ if(!cleanText) return;
+
+ try{
+  const synth = window.speechSynthesis;
+
+  synth.cancel();
+  await waitForVoices();
+
+  if(!voiceEnabled) return;
+
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'es-AR';
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const spanishVoice =
+   availableVoices.find(v => v.lang.toLowerCase() === 'es-ar') ||
+   availableVoices.find(v => v.lang.toLowerCase().startsWith('es-mx')) ||
+   availableVoices.find(v => v.lang.toLowerCase().startsWith('es-es')) ||
+   availableVoices.find(v => v.lang.toLowerCase().startsWith('es'));
+
+  if(spanishVoice){
+   utterance.voice = spanishVoice;
+  }
+
+  utterance.onstart = () => {
+   $('status').textContent = 'JARVIS hablando...';
+  };
+
+  utterance.onend = () => {
+   $('status').textContent = 'Conectado';
+  };
+
+  utterance.onerror = (event) => {
+   $('status').textContent = 'Error de voz: ' + event.error;
+  };
+
+  synth.resume();
+  synth.speak(utterance);
+
+ }catch(error){
+  $('status').textContent = 'No se pudo reproducir la voz.';
+ }
+}
+
+// ACTIVAR O DESACTIVAR VOZ
+$('voice').onclick = async () => {
  if(!('speechSynthesis' in window)){
-  add('assistant','Su navegador no admite voz.');
+  add('assistant','Su navegador no admite síntesis de voz.');
   return;
  }
 
- voice = !voice;
+ voiceEnabled = !voiceEnabled;
 
- if(voice){
+ if(voiceEnabled){
   $('voice').textContent = '🔊 VOZ ACTIVADA';
   $('voice').classList.add('active');
 
-  // Prueba de sonido iniciada directamente por el usuario
-  speak('Voz de JARVIS activada. A sus órdenes, Señor.');
-
+  await speak('Voz de JARVIS activada. A sus órdenes, Señor.');
  }else{
   $('voice').textContent = '🔇 ACTIVAR VOZ';
   $('voice').classList.remove('active');
   window.speechSynthesis.cancel();
+  $('status').textContent = 'Voz desactivada';
  }
 };
 
@@ -220,7 +279,7 @@ $('clear').onclick = () => {
  add('assistant','Conversación reiniciada, Señor.',false);
 };
 
-// CHAT CON OPENAI
+// CHAT CON GEMINI
 $('form').onsubmit = async e => {
  e.preventDefault();
 
@@ -262,14 +321,10 @@ $('form').onsubmit = async e => {
 
 // RECONOCIMIENTO DE VOZ
 $('mic').onclick = () => {
- const SR =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
+ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
  if(!SR){
-  add('assistant',
-   'El reconocimiento de voz no está disponible en este navegador.'
-  );
+  add('assistant','El reconocimiento de voz no está disponible en este navegador.');
   return;
  }
 
@@ -282,15 +337,12 @@ $('mic').onclick = () => {
  };
 
  recognition.onresult = e => {
-  $('prompt').value =
-   e.results[0][0].transcript;
-
+  $('prompt').value = e.results[0][0].transcript;
   $('form').requestSubmit();
  };
 
  recognition.onerror = e => {
-  $('status').textContent =
-   'Error de micrófono: ' + e.error;
+  $('status').textContent = 'Error de micrófono: ' + e.error;
  };
 
  recognition.onend = () => {
