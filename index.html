@@ -1,358 +1,634 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>J.A.R.V.I.S. 2.0</title>
-<meta name="theme-color" content="#07111f">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#010409">
+<title>J.A.R.V.I.S. 2.0 — Sistema de Inteligencia Artificial</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
-body{
-margin:0;
-background:radial-gradient(circle at top,#12334d,#07111f 65%);
-color:#eaf6ff;
-font:16px system-ui;
-min-height:100vh
+:root {
+    --cyan:#00f3ff;
+    --blue:#0066ff;
+    --dark:#030814;
+    --darker:#010409;
+    --glass:rgba(0,243,255,.08);
+    --border:rgba(0,243,255,.3);
+    --glow:0 0 20px rgba(0,243,255,.4);
+    --warn:#ffb700;
+    --alert:#ff3366;
 }
-main{max-width:720px;margin:auto;padding:24px 16px}
-.head{text-align:center;padding:25px}
-.orb{
-margin:auto auto 15px;
-border:2px solid #36d9e8;
-border-radius:50%;
-width:72px;height:72px;
-display:grid;place-items:center;
-color:#36d9e8;font-size:28px;
-box-shadow:0 0 25px #36d9e855
+
+* {
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Share Tech Mono',monospace;
 }
-h1{letter-spacing:5px;margin:0}
-.sub,.date,.note{color:#9bb1c5}
-.clock{font-size:30px;margin:15px}
-.panel{
-background:#0d1b2c;
-border:1px solid #21445e;
-border-radius:18px;padding:16px
+
+body {
+    background-color:var(--darker);
+    color:var(--cyan);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
+    background-image:
+        radial-gradient(circle at 50% 50%,rgba(0,102,255,.07),transparent 70%),
+        linear-gradient(rgba(0,243,255,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,243,255,.03) 1px,transparent 1px);
+    background-size:100% 100%,30px 30px,30px 30px;
 }
-#chat{
-height:300px;overflow:auto;
-display:flex;flex-direction:column;
-gap:10px;padding:15px 0
+
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:12px 16px;
+    background:linear-gradient(180deg,rgba(3,8,20,.95),rgba(3,8,20,.6));
+    border-bottom:1px solid var(--border);
+    box-shadow:0 4px 20px rgba(0,0,0,.8);
+    z-index:10;
 }
-.msg{
-padding:11px 14px;
-border-radius:13px;
-max-width:90%;
-white-space:pre-wrap
+
+.system-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.1rem;
+    font-weight:800;
+    letter-spacing:2px;
+    text-shadow:var(--glow);
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
-.jarvis{background:#102b40;align-self:flex-start}
-.user{background:#12404b;align-self:flex-end}
-form,.actions{
-display:flex;gap:8px;
-margin-top:12px;flex-wrap:wrap
+
+.header-controls {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
 }
-input{
-min-width:0;flex:1;
-padding:14px;border-radius:10px;
-border:1px solid #28506b;
-background:#071421;color:white;
-font-size:15px
+
+.system-status,.icon-btn {
+    font-size:.7rem;
+    padding:6px 9px;
+    border:1px solid var(--cyan);
+    border-radius:4px;
+    background:var(--glass);
+    color:var(--cyan);
+    letter-spacing:1px;
 }
-button{
-padding:11px 15px;border:0;
-border-radius:10px;
-background:#36d9e8;
-color:#04202a;font-weight:bold;
-cursor:pointer
+
+.icon-btn {
+    cursor:pointer;
 }
-.actions button{
-background:#16334a;
-color:#eaf6ff;
-border:1px solid #28506b
+
+.main-container {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:12px;
+    max-width:800px;
+    width:100%;
+    margin:0 auto;
+    gap:12px;
+    min-height:calc(100vh - 60px);
 }
-#voice.active{
-background:#087b67;
-border-color:#36d9a0
+
+.hud-top-panel {
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    gap:10px;
+    align-items:center;
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+    backdrop-filter:blur(5px);
 }
-.note{
-font-size:12px;line-height:1.5;
-margin-top:12px
+
+.hud-info {
+    font-size:.7rem;
+    color:rgba(0,243,255,.7);
+    letter-spacing:1px;
+}
+
+.arc-container {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+}
+
+.arc-reactor {
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    border:2px solid var(--cyan);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:var(--glow),inset 0 0 15px rgba(0,243,255,.3);
+    animation:pulse-reactor 3s infinite ease-in-out;
+}
+
+.arc-core {
+    width:24px;
+    height:24px;
+    background:var(--cyan);
+    border-radius:50%;
+    box-shadow:0 0 15px var(--cyan),0 0 30px var(--cyan);
+}
+
+@keyframes pulse-reactor {
+    0%,100% {transform:scale(1);opacity:.85}
+    50% {transform:scale(1.05);opacity:1}
+}
+
+.jarvis-state-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:.65rem;
+    margin-top:4px;
+    letter-spacing:1.5px;
+}
+
+.quick-commands {
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:3px;
+}
+
+.quick-chip {
+    background:rgba(0,243,255,.05);
+    border:1px solid rgba(0,243,255,.2);
+    color:var(--cyan);
+    padding:7px 10px;
+    border-radius:4px;
+    font-size:.7rem;
+    white-space:nowrap;
+    cursor:pointer;
+}
+
+.chat-box {
+    flex:1;
+    min-height:220px;
+    background:rgba(3,8,20,.7);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    backdrop-filter:blur(5px);
+    box-shadow:inset 0 0 20px rgba(0,0,0,.5);
+}
+
+.message {
+    max-width:85%;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:.9rem;
+    line-height:1.5;
+    overflow-wrap:anywhere;
+    animation:fadeIn .3s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0;transform:translateY(6px)}
+    to {opacity:1;transform:translateY(0)}
+}
+
+.message.user {
+    background:rgba(0,102,255,.15);
+    border:1px solid rgba(0,102,255,.4);
+    color:#fff;
+    align-self:flex-end;
+}
+
+.message.jarvis {
+    background:var(--glass);
+    border:1px solid var(--border);
+    color:var(--cyan);
+    align-self:flex-start;
+    box-shadow:0 0 10px rgba(0,243,255,.1);
+}
+
+.message.system-msg {
+    background:rgba(255,183,0,.1);
+    border:1px solid rgba(255,183,0,.3);
+    color:var(--warn);
+    align-self:center;
+    font-size:.75rem;
+    text-align:center;
+    width:100%;
+}
+
+.control-panel {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+}
+
+.chat-input {
+    flex:1;
+    min-width:0;
+    background:rgba(1,4,9,.8);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:12px;
+    color:#fff;
+    font-size:16px;
+    outline:none;
+    user-select:text;
+}
+
+.chat-input:focus {
+    border-color:var(--cyan);
+    box-shadow:var(--glow);
+}
+
+.stark-btn {
+    background:rgba(0,243,255,.1);
+    border:1px solid var(--cyan);
+    color:var(--cyan);
+    border-radius:6px;
+    padding:12px;
+    font-family:'Orbitron',sans-serif;
+    font-weight:600;
+    font-size:.75rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+}
+
+.stark-btn:disabled {
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.stark-btn.mic-active {
+    background:var(--alert);
+    border-color:var(--alert);
+    color:#fff;
+    animation:pulse-mic 1s infinite alternate;
+}
+
+@keyframes pulse-mic {
+    from {transform:scale(1)}
+    to {transform:scale(1.05)}
+}
+
+@media(max-width:480px) {
+    header {padding:10px}
+    .system-title {font-size:.9rem}
+    .system-status {font-size:.6rem}
+    .icon-btn {font-size:.6rem;padding:6px}
+    .main-container {padding:8px;gap:9px}
+    .hud-info {font-size:.58rem}
+    .arc-reactor {width:55px;height:55px}
+    .arc-core {width:20px;height:20px}
+    .control-panel {gap:5px;padding:7px}
+    .stark-btn {padding:11px 9px;font-size:.65rem}
+    .chat-input {padding:11px 8px}
 }
 </style>
 </head>
 
 <body>
-<main>
-<header class="head">
-<div class="orb">J</div>
-<h1>J.A.R.V.I.S.</h1>
-<div class="sub">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
-<div class="clock" id="clock"></div>
-<div class="date" id="date"></div>
+
+<header>
+    <div class="system-title">
+        <span>◉</span>
+        J.A.R.V.I.S.
+        <span style="font-size:.65rem;font-weight:400">v2.0</span>
+    </div>
+
+    <div class="header-controls">
+        <button class="icon-btn" id="voice-toggle-btn" onclick="toggleVoiceMute()">VOZ: ON</button>
+        <button class="icon-btn" onclick="limpiarHistorialChat()">BORRAR CHAT</button>
+        <div class="system-status" id="sys-status">ONLINE</div>
+    </div>
 </header>
 
-<section class="panel">
-<div id="status" class="sub">Sistema preparado</div>
+<div class="main-container">
 
-<div id="chat">
-<div class="msg jarvis">
-A sus órdenes, Señor. ¿En qué puedo ayudarle?
-</div>
-</div>
+    <div class="hud-top-panel">
+        <div class="hud-info">
+            <div>CORE: STARK AI</div>
+            <div id="live-clock">00:00:00</div>
+            <div id="live-date"></div>
+        </div>
 
-<form id="form">
-<input id="prompt" placeholder="Escriba un mensaje..." maxlength="4000">
-<button id="send">ENVIAR</button>
-</form>
+        <div class="arc-container" onclick="testVoiceManual()">
+            <div class="arc-reactor">
+                <div class="arc-core"></div>
+            </div>
+            <div class="jarvis-state-text" id="jarvis-state-label">EN ESPERA</div>
+        </div>
 
-<div class="actions">
-<button type="button" id="mic">🎙 HABLAR</button>
-<button type="button" id="voice">🔊 ACTIVAR VOZ</button>
-<button type="button" id="clear">LIMPIAR</button>
-</div>
+        <div class="hud-info" style="text-align:right">
+            <div>SEGURIDAD: ACTIVA</div>
+            <div>RED: NETLIFY/GEMINI</div>
+        </div>
+    </div>
 
-<div class="note">
-Sistema de voz compatible con el motor de síntesis de Android.
-La clave API permanece protegida en el servidor.
+    <div class="quick-commands">
+        <div class="quick-chip" onclick="enviarMensajeRapido('Estado de los sistemas, Jarvis.')">Estado de sistemas</div>
+        <div class="quick-chip" onclick="enviarMensajeRapido('¿Qué hora es?')">Hora actual</div>
+        <div class="quick-chip" onclick="enviarMensajeRapido('Preséntate ante mí.')">Identidad</div>
+        <div class="quick-chip" onclick="enviarMensajeRapido('Ejecuta un diagnóstico general.')">Diagnóstico</div>
+    </div>
+
+    <div class="chat-box" id="chat-box"></div>
+
+    <div class="control-panel">
+        <input
+            type="text"
+            id="user-input"
+            class="chat-input"
+            placeholder="Escriba su orden..."
+            autocomplete="off"
+        >
+
+        <button class="stark-btn" id="mic-btn" onclick="toggleSpeechRecognition()" title="Micrófono">
+            🎙
+        </button>
+
+        <button class="stark-btn" id="send-btn" onclick="enviarMensaje()">
+            ENVIAR
+        </button>
+    </div>
 </div>
-</section>
-</main>
 
 <script>
-const $ = id => document.getElementById(id);
+let voiceEnabled = true;
+let isSending = false;
 
-// RELOJ Y FECHA
-function clock(){
- const d = new Date();
- $('clock').textContent = d.toLocaleTimeString('es-AR');
- $('date').textContent = d.toLocaleDateString('es-AR',{
-  weekday:'long',
-  year:'numeric',
-  month:'long',
-  day:'numeric'
- });
-}
-clock();
-setInterval(clock,1000);
+let historialChat = [];
 
-// HISTORIAL
-let history = [];
-
-try{
- history = JSON.parse(localStorage.getItem('jarvis_history') || '[]');
-}catch(e){}
-
-function add(role,content,save=true){
- const el = document.createElement('div');
- el.className = 'msg ' + (role === 'user' ? 'user' : 'jarvis');
- el.textContent = content;
- $('chat').appendChild(el);
- $('chat').scrollTop = $('chat').scrollHeight;
-
- if(save){
-  history.push({role,content});
-  history = history.slice(-20);
-  localStorage.setItem('jarvis_history',JSON.stringify(history));
- }
+try {
+    const guardado = JSON.parse(localStorage.getItem('jarvis_chat_history'));
+    if (Array.isArray(guardado)) historialChat = guardado;
+} catch (error) {
+    historialChat = [];
 }
 
-if(history.length){
- $('chat').innerHTML = '';
- history.forEach(m => add(m.role,m.content,false));
+if (historialChat.length === 0) {
+    historialChat.push({
+        texto:"A sus órdenes, Señor. Sistemas principales de J.A.R.V.I.S. 2.0 en línea. ¿En qué le puedo asistir?",
+        tipo:"jarvis"
+    });
 }
 
-// SISTEMA DE VOZ MEJORADO
-let voiceEnabled = false;
-let availableVoices = [];
+window.addEventListener('DOMContentLoaded', () => {
+    renderizarHistorial();
+    actualizarReloj();
+    setInterval(actualizarReloj,1000);
+});
 
-function loadVoices(){
- availableVoices = window.speechSynthesis.getVoices();
+function actualizarReloj() {
+    const ahora = new Date();
+    document.getElementById('live-clock').textContent =
+        ahora.toLocaleTimeString('es-AR');
+    document.getElementById('live-date').textContent =
+        ahora.toLocaleDateString('es-AR');
 }
 
-if('speechSynthesis' in window){
- loadVoices();
- window.speechSynthesis.addEventListener('voiceschanged',loadVoices);
+function actualizarEstado(estado, etiqueta) {
+    document.getElementById('sys-status').textContent = estado;
+    document.getElementById('jarvis-state-label').textContent = etiqueta;
 }
 
-function waitForVoices(){
- return new Promise(resolve => {
-  loadVoices();
-
-  if(availableVoices.length){
-   resolve();
-   return;
-  }
-
-  let finished = false;
-
-  const done = () => {
-   if(finished) return;
-   finished = true;
-   clearTimeout(timer);
-   resolve();
-  };
-
-  window.speechSynthesis.addEventListener('voiceschanged',done,{once:true});
-
-  const timer = setTimeout(done,1800);
- });
+function guardarHistorial() {
+    try {
+        localStorage.setItem(
+            'jarvis_chat_history',
+            JSON.stringify(historialChat)
+        );
+    } catch (error) {
+        console.warn('No se pudo guardar el historial:',error);
+    }
 }
 
-async function speak(text){
- if(!voiceEnabled || !('speechSynthesis' in window)) return;
+function renderizarHistorial() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML = '';
 
- const cleanText = String(text || '').trim();
- if(!cleanText) return;
+    historialChat.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message ' + msg.tipo;
+        div.textContent = msg.texto;
+        chatBox.appendChild(div);
+    });
 
- try{
-  const synth = window.speechSynthesis;
-
-  synth.cancel();
-  await waitForVoices();
-
-  if(!voiceEnabled) return;
-
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = 'es-AR';
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  utterance.volume = 1;
-
-  const spanishVoice =
-   availableVoices.find(v => v.lang.toLowerCase() === 'es-ar') ||
-   availableVoices.find(v => v.lang.toLowerCase().startsWith('es-mx')) ||
-   availableVoices.find(v => v.lang.toLowerCase().startsWith('es-es')) ||
-   availableVoices.find(v => v.lang.toLowerCase().startsWith('es'));
-
-  if(spanishVoice){
-   utterance.voice = spanishVoice;
-  }
-
-  utterance.onstart = () => {
-   $('status').textContent = 'JARVIS hablando...';
-  };
-
-  utterance.onend = () => {
-   $('status').textContent = 'Conectado';
-  };
-
-  utterance.onerror = (event) => {
-   $('status').textContent = 'Error de voz: ' + event.error;
-  };
-
-  synth.resume();
-  synth.speak(utterance);
-
- }catch(error){
-  $('status').textContent = 'No se pudo reproducir la voz.';
- }
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// ACTIVAR O DESACTIVAR VOZ
-$('voice').onclick = async () => {
- if(!('speechSynthesis' in window)){
-  add('assistant','Su navegador no admite síntesis de voz.');
-  return;
- }
+function agregarMensajeAlChat(texto,tipo,id=null) {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
 
- voiceEnabled = !voiceEnabled;
+    div.className = 'message ' + tipo;
+    if (id) div.id = id;
 
- if(voiceEnabled){
-  $('voice').textContent = '🔊 VOZ ACTIVADA';
-  $('voice').classList.add('active');
+    div.textContent = texto;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-  await speak('Voz de JARVIS activada. A sus órdenes, Señor.');
- }else{
-  $('voice').textContent = '🔇 ACTIVAR VOZ';
-  $('voice').classList.remove('active');
-  window.speechSynthesis.cancel();
-  $('status').textContent = 'Voz desactivada';
- }
-};
+    if (tipo === 'user' || tipo === 'jarvis') {
+        historialChat.push({texto,tipo});
+        historialChat = historialChat.slice(-40);
+        guardarHistorial();
+    }
+}
 
-// LIMPIAR CONVERSACIÓN
-$('clear').onclick = () => {
- history = [];
- localStorage.removeItem('jarvis_history');
- $('chat').innerHTML = '';
- add('assistant','Conversación reiniciada, Señor.',false);
-};
+function limpiarHistorialChat() {
+    historialChat = [{
+        texto:"Historial reiniciado. A sus órdenes, Señor.",
+        tipo:"jarvis"
+    }];
 
-// CHAT CON GEMINI
-$('form').onsubmit = async e => {
- e.preventDefault();
+    guardarHistorial();
+    renderizarHistorial();
+    hablarJarvis("Historial de conversación borrado, Señor.");
+}
 
- const t = $('prompt').value.trim();
- if(!t) return;
+function toggleVoiceMute() {
+    voiceEnabled = !voiceEnabled;
 
- $('prompt').value = '';
- add('user',t);
+    const btn = document.getElementById('voice-toggle-btn');
+    btn.textContent = voiceEnabled ? 'VOZ: ON' : 'VOZ: OFF';
+    btn.style.color = voiceEnabled ? 'var(--cyan)' : 'var(--warn)';
 
- $('send').disabled = true;
- $('status').textContent = 'Procesando...';
+    if (!voiceEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+}
 
- try{
-  const r = await fetch('/.netlify/functions/chat',{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({
-    messages:history.slice(-12)
-   })
-  });
+function hablarJarvis(texto) {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
 
-  const d = await r.json();
+    const sintesis = window.speechSynthesis;
+    sintesis.cancel();
 
-  if(!r.ok) throw Error(d.error || 'Error');
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1;
+    utterance.pitch = 0.95;
 
-  add('assistant',d.reply);
-  speak(d.reply);
+    const voces = sintesis.getVoices();
+    const vozEspanol = voces.find(v => v.lang.toLowerCase().startsWith('es'));
 
-  $('status').textContent = 'Conectado';
+    if (vozEspanol) utterance.voice = vozEspanol;
 
- }catch(err){
-  add('assistant','No pude conectarme: '+err.message);
-  $('status').textContent = 'Conexión pendiente';
+    utterance.onend = () => actualizarEstado('ONLINE','EN ESPERA');
+    utterance.onerror = () => actualizarEstado('ONLINE','EN ESPERA');
 
- }finally{
-  $('send').disabled = false;
- }
-};
+    sintesis.speak(utterance);
+}
 
-// RECONOCIMIENTO DE VOZ
-$('mic').onclick = () => {
- const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function testVoiceManual() {
+    hablarJarvis('Sistemas de audio e interfaz holográfica listos, Señor.');
+}
 
- if(!SR){
-  add('assistant','El reconocimiento de voz no está disponible en este navegador.');
-  return;
- }
+async function enviarMensaje() {
+    if (isSending) return;
 
- const recognition = new SR();
- recognition.lang = 'es-AR';
- recognition.interimResults = false;
+    const input = document.getElementById('user-input');
+    const texto = input.value.trim();
 
- recognition.onstart = () => {
-  $('status').textContent = 'Escuchando...';
- };
+    if (!texto) return;
 
- recognition.onresult = e => {
-  $('prompt').value = e.results[0][0].transcript;
-  $('form').requestSubmit();
- };
+    agregarMensajeAlChat(texto,'user');
+    input.value = '';
 
- recognition.onerror = e => {
-  $('status').textContent = 'Error de micrófono: ' + e.error;
- };
+    isSending = true;
+    document.getElementById('send-btn').disabled = true;
 
- recognition.onend = () => {
-  if($('status').textContent === 'Escuchando...'){
-   $('status').textContent = 'Sistema preparado';
-  }
- };
+    actualizarEstado('PROCESANDO','PROCESANDO');
+    agregarMensajeAlChat('Analizando solicitud...','system-msg','temp-msg');
 
- recognition.start();
-};
+    try {
+        // Adaptación al formato que espera el backend de Netlify.
+        const mensajesParaServidor = historialChat.slice(-12).map(msg => ({
+            role: msg.tipo === 'user' ? 'user' : 'assistant',
+            content: msg.texto
+        }));
+
+        const respuesta = await fetch('/.netlify/functions/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                messages:mensajesParaServidor
+            })
+        });
+
+        const data = await respuesta.json();
+
+        const tempMsg = document.getElementById('temp-msg');
+        if (tempMsg) tempMsg.remove();
+
+        if (!respuesta.ok) {
+            throw new Error(data.error || 'Error del servidor');
+        }
+
+        if (data.reply) {
+            agregarMensajeAlChat(data.reply,'jarvis');
+            hablarJarvis(data.reply);
+            actualizarEstado('ONLINE','EN ESPERA');
+        } else {
+            throw new Error('El servidor no devolvió una respuesta válida.');
+        }
+
+    } catch (error) {
+        const tempMsg = document.getElementById('temp-msg');
+        if (tempMsg) tempMsg.remove();
+
+        const errorTxt = 'Error de conexión: ' + error.message;
+        agregarMensajeAlChat(errorTxt,'jarvis');
+        actualizarEstado('ERROR','ERROR');
+    } finally {
+        isSending = false;
+        document.getElementById('send-btn').disabled = false;
+    }
+}
+
+function enviarMensajeRapido(texto) {
+    document.getElementById('user-input').value = texto;
+    enviarMensaje();
+}
+
+// Reconocimiento de voz
+let recognition = null;
+let isListening = false;
+
+if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-AR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        isListening = true;
+        actualizarEstado('ESCUCHANDO','ESCUCHANDO');
+        document.getElementById('mic-btn').classList.add('mic-active');
+    };
+
+    recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('user-input').value = transcript;
+        enviarMensaje();
+    };
+
+    recognition.onerror = () => stopListening();
+    recognition.onend = () => stopListening();
+}
+
+function toggleSpeechRecognition() {
+    if (!recognition) {
+        alert('El reconocimiento de voz no está disponible en este navegador.');
+        return;
+    }
+
+    if (isListening) {
+        recognition.stop();
+    } else {
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
+
+function stopListening() {
+    isListening = false;
+    actualizarEstado('ONLINE','EN ESPERA');
+    document.getElementById('mic-btn').classList.remove('mic-active');
+}
+
+document.getElementById('user-input').addEventListener('keydown',event => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        enviarMensaje();
+    }
+});
 </script>
+
 </body>
 </html>
