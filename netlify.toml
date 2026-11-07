@@ -1,1 +1,4 @@
-[functions]\n  directory = "netlify/functions"\n  node_bundler = "esbuild"\n
+
+[functions]
+directory = "netlify/functions"
+node_bundler = "esbuild"
