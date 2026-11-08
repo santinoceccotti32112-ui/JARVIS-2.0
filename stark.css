@@ -1,0 +1,214 @@
+:root {
+  --cyan: #27dfff;
+  --blue: #087cff;
+  --dark: #020711;
+  --glass: rgba(5, 28, 53, .82);
+  --border: rgba(39, 223, 255, .48);
+  --glow: 0 0 22px rgba(0, 170, 255, .45);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% 35%, #07335a 0%, #020b19 48%, #010409 100%);
+  color: #e8faff;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .35;
+  background:
+    linear-gradient(rgba(39,223,255,.07) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(39,223,255,.07) 1px, transparent 1px);
+  background-size: 35px 35px;
+}
+
+header {
+  background: linear-gradient(100deg,#071a30,#020711 70%);
+  border-bottom: 2px solid var(--cyan);
+  box-shadow: 0 5px 30px rgba(0,150,255,.25);
+  padding: 18px;
+}
+
+.system-title {
+  font-family: Orbitron, sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 4px;
+  color: white;
+  text-shadow: 0 0 15px var(--cyan);
+}
+
+.system-title::before {
+  content: "STARK INDUSTRIES  //  ";
+  display: block;
+  font-size: .55rem;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  margin-bottom: 5px;
+}
+
+.system-status, .icon-btn {
+  border: 1px solid var(--cyan);
+  background: rgba(0,130,255,.12);
+  box-shadow: inset 0 0 12px rgba(0,180,255,.12);
+  color: var(--cyan);
+  border-radius: 3px;
+}
+
+.main-container {
+  max-width: 1100px;
+  padding: 18px;
+  gap: 16px;
+}
+
+.hud-top-panel {
+  min-height: 220px;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  background: linear-gradient(135deg,rgba(8,43,75,.85),rgba(1,9,21,.9));
+  border: 1px solid var(--cyan);
+  border-radius: 12px;
+  box-shadow: var(--glow), inset 0 0 35px rgba(0,130,255,.12);
+  padding: 22px;
+}
+
+.hud-info {
+  color: #a8eaff;
+  line-height: 2;
+  font-size: .8rem;
+}
+
+.arc-reactor {
+  width: 135px;
+  height: 135px;
+  border: 3px solid #4ceaff;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      transparent 0deg 12deg,
+      rgba(39,223,255,.65) 13deg 15deg
+    );
+  box-shadow:
+    0 0 20px #00cfff,
+    0 0 55px rgba(0,140,255,.65),
+    inset 0 0 30px #008cff;
+}
+
+.arc-core {
+  width: 43px;
+  height: 43px;
+  background: white;
+  box-shadow: 0 0 20px white, 0 0 55px #00dfff;
+}
+
+.jarvis-state-text {
+  color: white;
+  font-family: Orbitron, sans-serif;
+  letter-spacing: 3px;
+  margin-top: 14px;
+}
+
+.quick-commands {
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.quick-chip {
+  background: linear-gradient(135deg,rgba(0,130,255,.2),rgba(0,20,45,.8));
+  border: 1px solid var(--border);
+  color: #c5f5ff;
+  padding: 11px 15px;
+  border-radius: 5px;
+  transition: .2s;
+}
+
+.quick-chip:active {
+  background: #087cff;
+}
+
+.chat-box {
+  min-height: 300px;
+  background: linear-gradient(145deg,rgba(4,22,42,.95),rgba(1,7,17,.95));
+  border: 1px solid var(--cyan);
+  border-radius: 10px;
+  box-shadow: inset 0 0 30px rgba(0,130,255,.12), var(--glow);
+  padding: 20px;
+}
+
+.message {
+  border-radius: 8px;
+  padding: 13px 16px;
+}
+
+.message.jarvis {
+  background: rgba(0,125,200,.13);
+  border: 1px solid rgba(39,223,255,.45);
+  color: #d9faff;
+}
+
+.message.user {
+  background: rgba(0,100,255,.24);
+  border: 1px solid #087cff;
+}
+
+.control-panel {
+  background: linear-gradient(100deg,#071d35,#020914);
+  border: 1px solid var(--cyan);
+  border-radius: 9px;
+  padding: 12px;
+  box-shadow: var(--glow);
+}
+
+.chat-input {
+  background: #010914;
+  border: 1px solid rgba(39,223,255,.45);
+  color: white;
+}
+
+.stark-btn {
+  background: linear-gradient(135deg,#075ca5,#03182c);
+  border: 1px solid var(--cyan);
+  color: white;
+  box-shadow: 0 0 12px rgba(0,170,255,.25);
+}
+
+.stark-btn:active {
+  background: #087cff;
+}
+
+@media(max-width:480px) {
+  .main-container {
+    padding: 9px;
+  }
+
+  .hud-top-panel {
+    min-height: 175px;
+    padding: 12px 8px;
+    gap: 5px;
+  }
+
+  .arc-reactor {
+    width: 85px;
+    height: 85px;
+  }
+
+  .arc-core {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hud-info {
+    font-size: .58rem;
+  }
+
+  .system-title {
+    font-size: .95rem;
+  }
+
+  .chat-box {
+    min-height: 260px;
+  }
+}
